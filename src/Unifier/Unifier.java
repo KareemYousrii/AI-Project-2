@@ -6,13 +6,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Main
+public class Unifier
 {
-//	Predicate p = new Predicate("P", new LinkedList<Term>(Arrays.asList( new Variable("X"), 
-//	new Function("g", new LinkedList<Term>(Arrays.asList(new Constant("a")))),
-//	new Function("g", new LinkedList<Term>(Arrays.asList(new Function("f", new LinkedList) )) )
-//)) );
-	/* P( x, g(x), g(f(a)) ) and P( f(u), v, v ) */
+	
+	public Unifier() {
+		
+	}
 	
 	public Map<Variable, Term> unify(FOLNode x, FOLNode y)
 	{
@@ -39,13 +38,13 @@ public class Main
 		
 		// Attempt to unify two compound terms
 		else if(x.isCompound() && y.isCompound())
-			return unify(x.getArgs(), y.getArgs(), unifyOps(x.getOp(), y.getOp(), theta));
+			return unify(x.getArgs(), y.getArgs(), unifyOps(x.getSymbolicName(), y.getSymbolicName(), theta));
 		
 		else
 			return null;
 	}
 	
-	public Map<Variable, Term> unify (List <Term> x, List <Term> y, Map <Variable, Term> theta)
+	public Map<Variable, Term> unify (List <? extends FOLNode> x, List <? extends FOLNode> y, Map <Variable, Term> theta)
 	{
 		if (theta == null)
 			return null;
@@ -100,7 +99,7 @@ public class Main
 			return occurCheck(x, theta.get(y), theta);
 		
 		else if(y instanceof Function) {
-			for(Term t: y.getArgs())
+			for(Term t: ((Function)y).getArgs())
 			{
 				if(occurCheck(x, t, theta))
 					return true;
@@ -112,15 +111,12 @@ public class Main
 	
 	public void cascadeSub(Variable x, FOLNode y, Map<Variable, Term> theta)
 	{
+		// all variables
 		for(Variable key: theta.keySet()) {
 			if(x.equals(theta.get(key))){
 				theta.put(key, (Term) y);
 			}
 		}
 		theta.put(x, (Term) y);
-	}
-	
-	public static void main(String[]args)
-	{
 	}
 }

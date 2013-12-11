@@ -1,5 +1,4 @@
 package FOL;
-
 import java.util.List;
 
 /**
@@ -8,15 +7,28 @@ import java.util.List;
  */
 public class Variable implements Term {
         private String value;
+        private int hashCode = 0;
+        private int indexical = -1;
 
         public Variable(String s) {
                 value = s.trim();
         }
 
+        public Variable(String s, int idx) {
+                value = s.trim();
+                indexical = idx;
+        }
+
         public String getValue() {
                 return value;
         }
-
+        
+        public void setValue(String val) {
+            	this.value = val;
+        }
+        
+        //
+        // START-Term
         public String getSymbolicName() {
                 return getValue();
         }
@@ -31,14 +43,54 @@ public class Variable implements Term {
                 return null;
         }
 
+        public Variable copy() {
+                return new Variable(value, indexical);
+        }
+
+        // END-Term
+        //
+
+        public int getIndexical() {
+                return indexical;
+        }
+
+        public void setIndexical(int idx) {
+                indexical = idx;
+                hashCode = 0;
+        }
+
+        public String getIndexedValue() {
+                return value + indexical;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+
+                if (this == o) {
+                        return true;
+                }
+                if (!(o instanceof Variable)) {
+                        return false;
+                }
+
+                Variable v = (Variable) o;
+                return v.getValue().equals(getValue())
+                                && v.getIndexical() == getIndexical();
+        }
+
+        @Override
+        public int hashCode() {
+                if (0 == hashCode) {
+                        hashCode = 17;
+                        hashCode += indexical;
+                        hashCode = 37 * hashCode + value.hashCode();
+                }
+
+                return hashCode;
+        }
+
         @Override
         public String toString() {
                 return value;
         }
-
-		@Override
-		public String getOp() {
-			// TODO Auto-generated method stub
-			return null;
-		}
 }

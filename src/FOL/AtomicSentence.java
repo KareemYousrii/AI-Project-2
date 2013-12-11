@@ -3,11 +3,11 @@ package FOL;
 import java.util.List;
 
 /**
- * @author Ravi Mohan
  * @author Ciaran O'Reilly
+ * 
  */
-public interface Term extends FOLNode {
+public interface AtomicSentence extends Sentence {
         List<Term> getArgs();
 
-        Term copy();
+        AtomicSentence copy();
 }
