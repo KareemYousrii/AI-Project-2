@@ -34,6 +34,14 @@ public class ConnectedSentence implements Sentence {
         public Sentence getSecond() {
                 return second;
         }
+        
+        public void setFirst(Sentence s) {
+        	this.first = s;
+        }
+        
+        public void setSecond(Sentence s) {
+        	this.second = s;
+        }
 
         //
         // START-Sentence
