@@ -14,13 +14,17 @@ public class ConnectedSentence implements Sentence {
         private List<Sentence> args = new ArrayList<Sentence>();
         private String stringRep = null;
         private int hashCode = 0;
-
+        
+        public ConnectedSentence(String connector) {
+            this.connector = connector;
+    }
+        
         public ConnectedSentence(String connector, Sentence first, Sentence second) {
                 this.connector = connector;
                 this.first = first;
                 this.second = second;
-                args.add(first);
-                args.add(second);
+                args.add(0, first);
+                args.add(1,second);
         }
 
         public String getConnector() {
@@ -28,7 +32,7 @@ public class ConnectedSentence implements Sentence {
         }
 
         public Sentence getFirst() {
-                return first;
+        		return first;
         }
 
         public Sentence getSecond() {
@@ -36,10 +40,12 @@ public class ConnectedSentence implements Sentence {
         }
         
         public void setFirst(Sentence s) {
+        	args.add(0, s);
         	this.first = s;
         }
         
         public void setSecond(Sentence s) {
+        	args.add(1, s);
         	this.second = s;
         }
 
@@ -92,17 +98,15 @@ public class ConnectedSentence implements Sentence {
 
         @Override
         public String toString() {
-                if (null == stringRep) {
-                        StringBuilder sb = new StringBuilder();
-                        sb.append("(");
-                        sb.append(first.toString());
-                        sb.append(" ");
-                        sb.append(connector);
-                        sb.append(" ");
-                        sb.append(second.toString());
-                        sb.append(")");
-                        stringRep = sb.toString();
-                }
+                StringBuilder sb = new StringBuilder();
+                sb.append("(");
+                sb.append(first.toString());
+                sb.append(" ");
+                sb.append(connector);
+                sb.append(" ");
+                sb.append(second.toString());
+                sb.append(")");
+                stringRep = sb.toString();
                 return stringRep;
         }
 }
