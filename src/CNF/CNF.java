@@ -211,7 +211,6 @@ public class CNF {
 					ret.add(ret.size(), getPredicates(cs.getFirst()));
 					if(cs.getSecond() instanceof ConnectedSentence)
 					{
-						System.out.println("CONNECTED");
 						cs = (ConnectedSentence) cs.getSecond();
 					}
 					else
@@ -253,8 +252,7 @@ public class CNF {
 			else
 			{
 				sen.add(second);
-			
-		}
+			}
 		}
 		else
 		{
