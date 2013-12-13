@@ -16,7 +16,7 @@ import CNF.*;
 public class Main {
 	
 	public static void main(String [] args){
-/*		Unifier u = new Unifier();
+		Unifier u = new Unifier();
 		
 		Predicate p1 = new Predicate("P");
 		p1.addArg(new Variable("X"));
@@ -64,7 +64,7 @@ public class Main {
 		
 		System.out.println("m1: " +  m1);
 		System.out.println("m2: " +  m2);
-		System.out.println("m3: " +  m3);*/
+		System.out.println("m3: " +  m3);
 		
 		/*************************** First CNF Test Case ***************************/
 		//Q(X) ==> !P(X)
