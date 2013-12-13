@@ -263,43 +263,7 @@ public class CNF {
 		return sen;
 	}
 	
-	public static List<ArrayList<Sentence>> renameVariables(List<ArrayList<Sentence>> predicates)
-	{
-		int c = 1;
-		List<ArrayList<Sentence>> ret = new ArrayList<ArrayList<Sentence>>();
-		for(int i = 0; i < predicates.size(); i++)
-		{
-			ret.add(new ArrayList<Sentence>());
-			
-			for(int j = 0; j < predicates.get(i).size(); j++)
-			{
-				Predicate pred = (Predicate) predicates.get(i).get(j);
-				List<Term> terms = pred.getTerms();
-				List<Term> temp = new ArrayList<Term>();
-				for(int k = 0; k < terms.size(); k++)
-				{
-					if(terms.get(k) instanceof Variable)
-					{
-						Variable v = (Variable)(terms.get(k));
-						temp.add(new Variable(v.getValue() + c));
-						c++;
-					}
-					else
-					{
-						temp.add(terms.get(k));
-					}
-					
-				}
-				pred.setTerms(temp);
-				System.out.println(pred.getTerms());
-				predicates.get(i).set(j, pred);
-				ret.get(i).add(pred);
-				
-			}
-		}
-		System.out.println("C is " + c);
-		return ret;
-	}
+
 	public static void main(String[]args)
 	{
 		List<Term> terms = new ArrayList<Term>();
@@ -318,7 +282,6 @@ public class CNF {
 		ConnectedSentence cs4 = new ConnectedSentence(Connectors.AND, cs2, cs3);
 		System.out.println(cs4.toString());
 		List<ArrayList<Sentence>> disj = conjToList(cs4);
-		disj = renameVariables(disj);
 		System.out.println(disj.toString());
 	}
 	
