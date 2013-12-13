@@ -1,10 +1,11 @@
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Map;
 
 import Unifier.Unifier;
 import FOL.*;
-
+import CNF.*;
 /*
  *  P(x, g(x), g(f (a))) and P (f (u), v, v) 
  *  P(a,y,f(y)) and P(z,z,u)
@@ -12,6 +13,7 @@ import FOL.*;
  */
 
 public class Main {
+	
 	public static void main(String [] args){
 		Unifier u = new Unifier();
 		
@@ -62,5 +64,52 @@ public class Main {
 		System.out.println("m1: " +  m1);
 		System.out.println("m2: " +  m2);
 		System.out.println("m3: " +  m3);
+		
+		/*************************** First CNF Test Case ***************************/
+		//Q(X) ==> !P(X)
+		ConnectedSentence s2 = new ConnectedSentence(Connectors.IMPLIES);
+		s2.setFirst(new Predicate("Q", new ArrayList<Term>(Arrays.asList(new Variable("x")))));
+		s2.setSecond(new NotSentence(new Predicate("P", new ArrayList<Term>(Arrays.asList(new Variable("x"))))));
+		
+		// ForAll x, Q(X) ==> !P(X)
+		QuantifiedSentence s3 = new QuantifiedSentence("ForAll", 
+				new ArrayList<Variable>(Arrays.asList(new Variable("x"))), s2);
+		
+		// P(X) /\ ForAll x, Q(X) ==> !P(X)
+		ConnectedSentence s1 = new ConnectedSentence(Connectors.AND);
+		s1.setFirst(new Predicate("P", new ArrayList<Term>(Arrays.asList(new Variable("x")))));
+		s1.setSecond(s3);
+		
+		// Exists x [P(X) /\ ForAll x [Q(X) ==> !P(X)]]
+		Sentence s = new QuantifiedSentence("Exists", new ArrayList<Variable>(Arrays.asList(new Variable("x"))), s1);
+		System.out.println(s);
+		CNF.removeImpl(s);
+		System.out.println(s);
+		
+		/*************************** Second CNF Test Case ***************************/
+		//Q(y) /\ R(y,x)
+		ConnectedSentence s4 = new ConnectedSentence(Connectors.AND,
+				new Predicate("Q", new ArrayList<Term>(Arrays.asList(new Variable("x")))),
+				new Predicate("R", new ArrayList<Term>(Arrays.asList(new Variable("y"), new Variable("x")))));
+		
+		//Exists y [Q(y) /\ R(y,x)]
+		QuantifiedSentence s5 = new QuantifiedSentence("Exists", 
+				new ArrayList<Variable>(Arrays.asList(new Variable("y"))), s4);
+		
+		//Q(x) /\ Exists y [Q(y) /\ R(y,x)]
+		ConnectedSentence s6 = new ConnectedSentence(Connectors.AND,
+				new Predicate("Q", new ArrayList<Term>(Arrays.asList(new Variable("x")))),
+				s5);
+		
+		ConnectedSentence s7 = new ConnectedSentence(Connectors.BICOND,
+				new Predicate("P", new ArrayList<Term>(Arrays.asList(new Variable("x")))),
+				s6);
+		
+		Sentence s8 = new QuantifiedSentence("ForAll", 
+				new ArrayList<Variable>(Arrays.asList(new Variable("x"))), 
+				s7);
+		System.out.println(s8);
+		CNF.pushNot(s8);
+		System.out.println(s8);
 	}
 }

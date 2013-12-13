@@ -10,87 +10,110 @@ import java.util.Stack;
 import FOL.*;
 public class CNF {
 	
-	public Sentence removeEquiv(Sentence s) {
+	@SuppressWarnings("unchecked")
+	public static void removeEquiv(Sentence s) {
 		if(s instanceof ConnectedSentence)
 		{
-			Sentence first = removeEquiv(((ConnectedSentence) s).getFirst());
-			Sentence second = removeEquiv(((ConnectedSentence) s).getSecond());
+			for(Sentence s1: (List<Sentence>)s.getArgs()) {
+				removeEquiv(s1);
+			}
 			
 			String conn = ((ConnectedSentence) s).getConnector();
+			Sentence first = ((ConnectedSentence) s).getFirst();
+			Sentence second = ((ConnectedSentence) s).getSecond();
 			
 			if (Connectors.isBICOND(conn)){
 				ConnectedSentence fir = new ConnectedSentence(Connectors.IMPLIES, first, second);
 				ConnectedSentence sec = new ConnectedSentence(Connectors.IMPLIES, second, first);
 				
-				s = new ConnectedSentence(Connectors.AND, fir, sec);
+				((ConnectedSentence) s).setFirst(fir);
+				((ConnectedSentence) s).setSecond(sec);
+				((ConnectedSentence) s).setConnector(Connectors.AND);
 			}
 		}
-		return s;
+		
+		else if (s instanceof NotSentence || s instanceof QuantifiedSentence) {
+			for(Sentence s1: (List<Sentence>)s.getArgs()) {
+				removeEquiv(s1);
+			}
+		}
 	}
 	
-	public Sentence removeImpl(Sentence s) {
-		
+	public static void removeImpl(Sentence s) {
 		if(s instanceof ConnectedSentence) {
-			Sentence first = removeImpl(((ConnectedSentence) s).getFirst());
-			Sentence second = removeImpl(((ConnectedSentence) s).getSecond());
+			for(Sentence s1: (List<Sentence>)s.getArgs()) {
+				removeImpl(s1);
+			}
 			
 			String conn = ((ConnectedSentence) s).getConnector();
+			Sentence first = ((ConnectedSentence) s).getFirst();
 			
 			if(Connectors.isIMPLIES(conn))
 			{
-				s = new ConnectedSentence(Connectors.OR, new NotSentence(first), second);
+				((ConnectedSentence) s).setFirst(new NotSentence(first));
+				((ConnectedSentence) s).setConnector(Connectors.OR);
 			}
 		}
-		return s;
+		
+		else if (s instanceof NotSentence || s instanceof QuantifiedSentence) {
+			for(Sentence s1: (List<Sentence>)s.getArgs()) {
+				removeImpl(s1);
+			}
+		}
+	}
+
+	
+	public static void pushNot(Sentence s) {
+		if(s instanceof NotSentence) {
+			pushNot(((NotSentence) s).getNegated());
+			applyNegation(((NotSentence) s).getNegated());
+		}
+		
+		else if (s instanceof ConnectedSentence || s instanceof QuantifiedSentence) {
+			for(Sentence s1: (List<Sentence>)s.getArgs()) {
+				pushNot(s1);
+			}
+		}
 	}
 	
-	public Sentence pushNot(Sentence s) {
-		/* If s is of the form S /\ S or S \/ S */
-		if(s instanceof ConnectedSentence) {
-			Sentence first = pushNot(((ConnectedSentence) s).getFirst());
-			Sentence second = pushNot(((ConnectedSentence) s).getSecond());
+	public static void applyNegation(Sentence s) {
+		if(s instanceof QuantifiedSentence) {
+			if(((QuantifiedSentence) s).getQuantifier().equals("ForAll")) {
+				((QuantifiedSentence) s).setQuantifier("Exists");
+			}
+			
+			else {
+				((QuantifiedSentence) s).setQuantifier("ForAll");
+			}
+		}
+		
+		else if (s instanceof ConnectedSentence) {
+			if(((ConnectedSentence) s).getConnector().equals(Connectors.AND)) {
+				((ConnectedSentence) s).setConnector(Connectors.OR);
+			}
+			
+			else if(((ConnectedSentence) s).getConnector().equals(Connectors.OR)) {
+				((ConnectedSentence) s).setConnector(Connectors.AND);
+			}
 		}
 		
 		else if(s instanceof NotSentence) {
 			Sentence negated = ((NotSentence) s).getNegated();
-			
 			if(negated instanceof ConnectedSentence) {
 				Sentence first = ((ConnectedSentence) negated).getFirst();
 				Sentence second = ((ConnectedSentence) negated).getSecond();
-				
 				String connector = ((ConnectedSentence) negated).getConnector();
-				if(Connectors.isAND(connector)) {
-					s = pushNot(new ConnectedSentence(Connectors.OR, new NotSentence(first),
-							new NotSentence(second)));	
-				}
 				
-				else if (Connectors.isOR(connector)) {
-					s = pushNot(new ConnectedSentence(Connectors.AND, new NotSentence(first),
-							new NotSentence(second)));	
-				}
-			}
-			
-			else if(negated instanceof NotSentence) {
-				s = pushNot(((NotSentence) negated).getNegated());
-			}
-			
-			else if(negated instanceof QuantifiedSentence) {
-				if(((QuantifiedSentence) negated).getQuantifier().equals("ForAll")){
-					s = pushNot(new QuantifiedSentence("Exists", 
-							((QuantifiedSentence) negated).getVariables(),
-							((QuantifiedSentence) negated).getQuantified()));
-				}
-				else {
-					s = pushNot(new QuantifiedSentence("ForAll", 
-							((QuantifiedSentence) negated).getVariables(),
-							((QuantifiedSentence) negated).getQuantified()));
-				}
+				s = new ConnectedSentence(connector, first, second);
 			}
 		}
-		return s;
+		
+		else if(s instanceof Predicate) {
+			s = new NotSentence(s);
+		}
 	}
 	
-	public void standardizeApart(Sentence s) {
+	public static void standardizeApart(Sentence s) {
 		Stack <String> stack = new Stack <String> ();
 		stack.push("t");
 		stack.push("u");
@@ -103,7 +126,7 @@ public class CNF {
 	}
 
 	
-	public void standardizeApart(Sentence s, Stack <String> stack) {
+	public static void standardizeApart(Sentence s, Stack <String> stack) {
 		if(s instanceof QuantifiedSentence) {
 			for(Variable v: ((QuantifiedSentence) s).getVariables())
 				v.setValue(stack.pop() + "");
@@ -111,49 +134,76 @@ public class CNF {
 			standardizeApart(((QuantifiedSentence) s).getQuantified(), stack);
 		}
 		
-		else if(s instanceof ConnectedSentence) {
-			standardizeApart(((ConnectedSentence) s).getFirst(), stack);
-			standardizeApart(((ConnectedSentence) s).getSecond(), stack);
+		else if(s instanceof ConnectedSentence || s instanceof NotSentence) {
+			for(Sentence s1: (List<Sentence>)s.getArgs()) {
+				standardizeApart(s1, stack);
+			}
 		}
 	}
 	
-	public void skolemize(Sentence s) {
-		
-		Stack <Constant> stack = new Stack <Constant> ();
-		stack.push(new Constant("a"));
-		stack.push(new Constant("b"));
-		stack.push(new Constant("c"));
-		stack.push(new Constant("d"));
-		stack.push(new Constant("e"));
+	public static Sentence skolemize(Sentence s) {
 		
 		List <Variable> universal = new ArrayList <Variable> ();
 		Map <Variable, Term> existential = new LinkedHashMap<Variable, Term>();
-		skolemize(s, universal, existential);
+		return skolemize(s, universal, existential, 1);
 	}
 	
-	
-	public void skolemize(Sentence s, List <Variable> universal, Map <Variable, Term> existential, stack) {
+	public static Sentence skolemize(Sentence s, List <Variable> universal, Map <Variable, Term> existential, int num) {
 		if(s instanceof QuantifiedSentence) {
 			if(((QuantifiedSentence) s).getQuantifier().equals("ForAll")) {
-				
 				universal.add(((QuantifiedSentence) s).getVariables().get(0));
-				
-				skolemize(((QuantifiedSentence) s).getQuantified(), universal, existential);
 			}
-			
 			else {
-				existential.put(((QuantifiedSentence) s).getVariables().get(0), 
+				if(universal.size() == 0) {
+					existential.put(((QuantifiedSentence) s).getVariables().get(0), new Constant("a" + num++));
+				}
+				else {
+					Function f = new Function("f" + num++);
+					for(Variable v: universal) {
+						f.addArg(v);
+					}
+					existential.put(((QuantifiedSentence) s).getVariables().get(0), f);
+				}
 			}
+			Sentence quantified = ((QuantifiedSentence) s).getQuantified();
+			((QuantifiedSentence) s).setQuantified(skolemize(quantified, universal, existential, num));
 		}
 		
-		else {
-			for(Sentence s1: (List<Sentence>)s.getArgs()) {
-				if (s1 instanceof Variable) {
-					((Variable) s1).setValue();
-				}
-					
+		else if (s instanceof ConnectedSentence) {
+			Sentence first = skolemize(((ConnectedSentence) s).getFirst(), universal, existential, num);
+			Sentence second = skolemize(((ConnectedSentence) s).getSecond(), universal, existential, num);
+			
+			((ConnectedSentence) s).setFirst(first);
+			((ConnectedSentence) s).setSecond(second);
+		}
+		
+		else if (s instanceof NotSentence) {
+			s = skolemize(((NotSentence) s).getNegated(), universal, existential, num);
+		}
+		
+		else if(s instanceof Predicate) {
+			Predicate s1 = new Predicate(((Predicate) s).getPredicateName());
+			for(Term t: (ArrayList <Term>)s.getArgs()) {
+				s1.addArg(skolemize(t, existential));
+			}
+			return s1;
+		}
+		return s;
+	}
+	
+	public static Term skolemize(Term t,  Map <Variable, Term> existential) {
+		if(t instanceof Variable) {
+			if(existential.containsKey(t)) {
+				t = existential.get(t);
 			}
 		}
+		else if (t instanceof Function) {
+			Function f1 = new Function(((Function) t).getFunctionName());
+			for(Term t2: (ArrayList <Term>)t.getArgs()){
+				f1.addArg(skolemize(t2, existential));
+			}
+		}
+		return t;
 	}
 
 	public Sentence removeUniversals(Sentence s) {
@@ -169,68 +219,68 @@ public class CNF {
 		return s;
 	}
 	
-	public Sentence disToConj(Sentence s) {
-		if(s instanceof ConnectedSentence) {
-			if(((ConnectedSentence) s).getConnector().equals(Connectors.OR)) {
-				if(((ConnectedSentence) s).getSecond() instanceof ConnectedSentence 
-						&& ((ConnectedSentence) s).getFirst() instanceof Predicate) {
-					ConnectedSentence second = (ConnectedSentence) (((ConnectedSentence) s)
-							.getSecond());
-					if(second.getConnector().equals(Connectors.AND)) {
-						Predicate first = (Predicate)((ConnectedSentence) s).getFirst();
-						if(second.getFirst() instanceof Predicate 
-								&& second.getSecond() instanceof Predicate) {
-							ConnectedSentence firstdisj = 
-									new ConnectedSentence(Connectors.OR, first, second.getFirst());
-							ConnectedSentence seconddisj = 
-									new ConnectedSentence(Connectors.OR, first, second.getSecond());
-							s = new ConnectedSentence(Connectors.AND, firstdisj, seconddisj);
-						}
-					}
-				}
-			}
-		}
-	}
-	
-	public List <Sentence> disjToList(Sentence s)
-	{
-		List <Sentence> disj = new ArrayList <Sentence> ();
-		disjToList(disj, s);
-	}
-	
-	public List <Sentence> disjToList(List<Sentence> disj, Sentence s)
-	{
-		if(s instanceof ConnectedSentence)
-		{
-			ConnectedSentence temp = (ConnectedSentence) s;
-			if(temp.getConnector().equals(Connectors.AND))
-			{
-				disj.add(temp.getFirst());
-			}
-			return disjToList(disj, temp.getSecond());
-		}
-		return disj;
-	}
-	
-	public List<List<Sentence>> conjToList(List<Sentence> conj)
-	{
-		List<ArrayList<Sentence>> ret = new ArrayList< ArrayList <Sentence> >();
-		for(int i = 0; i < conj.size(); i++)
-		{
-			if(conj.get(i) instanceof ConnectedSentence)
-			{
-				ConnectedSentence temp = (ConnectedSentence) conj.get(i);
-				ArrayList<Sentence> sentences = new ArrayList<Sentence>();
-				sentences.add(temp.getFirst());
-				while(temp.getSecond() instanceof ConnectedSentence)
-				{
-					temp = (ConnectedSentence) temp.getSecond();
-					sentences.add(temp.getFirst());
-				}
-			}
-			ret.add(sentences);
-		}
-	}
+//	public Sentence disToConj(Sentence s) {
+//		if(s instanceof ConnectedSentence) {
+//			if(((ConnectedSentence) s).getConnector().equals(Connectors.OR)) {
+//				if(((ConnectedSentence) s).getSecond() instanceof ConnectedSentence 
+//						&& ((ConnectedSentence) s).getFirst() instanceof Predicate) {
+//					ConnectedSentence second = (ConnectedSentence) (((ConnectedSentence) s)
+//							.getSecond());
+//					if(second.getConnector().equals(Connectors.AND)) {
+//						Predicate first = (Predicate)((ConnectedSentence) s).getFirst();
+//						if(second.getFirst() instanceof Predicate 
+//								&& second.getSecond() instanceof Predicate) {
+//							ConnectedSentence firstdisj = 
+//									new ConnectedSentence(Connectors.OR, first, second.getFirst());
+//							ConnectedSentence seconddisj = 
+//									new ConnectedSentence(Connectors.OR, first, second.getSecond());
+//							s = new ConnectedSentence(Connectors.AND, firstdisj, seconddisj);
+//						}
+//					}
+//				}
+//			}
+//		}
+//	}
+//	
+//	public List <Sentence> disjToList(Sentence s)
+//	{
+//		List <Sentence> disj = new ArrayList <Sentence> ();
+//		disjToList(disj, s);
+//	}
+//	
+//	public List <Sentence> disjToList(List<Sentence> disj, Sentence s)
+//	{
+//		if(s instanceof ConnectedSentence)
+//		{
+//			ConnectedSentence temp = (ConnectedSentence) s;
+//			if(temp.getConnector().equals(Connectors.AND))
+//			{
+//				disj.add(temp.getFirst());
+//			}
+//			return disjToList(disj, temp.getSecond());
+//		}
+//		return disj;
+//	}
+//	
+//	public List<List<Sentence>> conjToList(List<Sentence> conj)
+//	{
+//		List<ArrayList<Sentence>> ret = new ArrayList< ArrayList <Sentence> >();
+//		for(int i = 0; i < conj.size(); i++)
+//		{
+//			ArrayList<Sentence> sentences = new ArrayList<Sentence>();
+//			if(conj.get(i) instanceof ConnectedSentence)
+//			{
+//				ConnectedSentence temp = (ConnectedSentence) conj.get(i);
+//				sentences.add(temp.getFirst());
+//				while(temp.getSecond() instanceof ConnectedSentence)
+//				{
+//					temp = (ConnectedSentence) temp.getSecond();
+//					sentences.add(temp.getFirst());
+//				}
+//			}
+//			ret.add(sentences);
+//		}
+//	}
 	
 	
 	

@@ -39,6 +39,10 @@ public class QuantifiedSentence implements Sentence {
         public Sentence getQuantified() {
                 return quantified;
         }
+        
+        public void setQuantified(Sentence s) {
+        		this.quantified = s;
+        }
 
         //
         // START-Sentence

@@ -29,7 +29,7 @@ public class Predicate implements AtomicSentence {
         }
 
         public List<Term> getTerms() {
-                return Collections.unmodifiableList(terms);
+                return terms;
         }
 
         //
