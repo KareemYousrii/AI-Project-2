@@ -21,7 +21,6 @@ public class QuantifiedSentence implements Sentence {
                 this.quantifier = quantifier;
                 this.variables.addAll(variables);
                 this.quantified = quantified;
-                this.args.addAll(variables);
                 this.args.add(quantified);
         }
 

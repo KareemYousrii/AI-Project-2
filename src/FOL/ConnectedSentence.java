@@ -39,6 +39,10 @@ public class ConnectedSentence implements Sentence {
                 return second;
         }
         
+        public void setConnector(String connector) {
+        	this.connector = connector;
+        }
+        
         public void setFirst(Sentence s) {
         	args.add(0, s);
         	this.first = s;
@@ -60,7 +64,7 @@ public class ConnectedSentence implements Sentence {
         }
 
         public List<Sentence> getArgs() {
-                return Collections.unmodifiableList(args);
+                return args;
         }
 
         public ConnectedSentence copy() {

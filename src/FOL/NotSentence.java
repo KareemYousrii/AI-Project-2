@@ -34,7 +34,7 @@ public class NotSentence implements Sentence {
         }
 
         public List<Sentence> getArgs() {
-                return Collections.unmodifiableList(args);
+                return args;
         }
 
         public NotSentence copy() {
