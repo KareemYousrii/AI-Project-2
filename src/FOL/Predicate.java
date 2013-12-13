@@ -37,6 +37,10 @@ public class Predicate implements AtomicSentence {
         public String getSymbolicName() {
                 return getPredicateName();
         }
+        
+        public void setTerms(List<Term> terms) {
+        	this.terms = terms;
+        }
 
         public boolean isCompound() {
                 return true;

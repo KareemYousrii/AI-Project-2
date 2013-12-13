@@ -13,6 +13,7 @@ public class Variable implements Term {
         public Variable(String s) {
                 value = s.trim();
         }
+        
 
         public Variable(String s, int idx) {
                 value = s.trim();
