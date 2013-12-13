@@ -10,7 +10,7 @@ import java.util.Stack;
 import FOL.*;
 public class CNF {
 	
-	public Sentence removeEquiv(Sentence s) {
+	public  Sentence removeEquiv(Sentence s) {
 		if(s instanceof ConnectedSentence)
 		{
 			Sentence first = removeEquiv(((ConnectedSentence) s).getFirst());
@@ -128,11 +128,11 @@ public class CNF {
 		
 		List <Variable> universal = new ArrayList <Variable> ();
 		Map <Variable, Term> existential = new LinkedHashMap<Variable, Term>();
-		skolemize(s, universal, existential);
+		//skolemize(s, universal, existential);
 	}
 	
 	
-	public void skolemize(Sentence s, List <Variable> universal, Map <Variable, Term> existential, stack) {
+	/*public void skolemize(Sentence s, List <Variable> universal, Map <Variable, Term> existential, stack) {
 		if(s instanceof QuantifiedSentence) {
 			if(((QuantifiedSentence) s).getQuantifier().equals("ForAll")) {
 				
@@ -154,7 +154,7 @@ public class CNF {
 					
 			}
 		}
-	}
+	}*/
 
 	public Sentence removeUniversals(Sentence s) {
 		if(s instanceof QuantifiedSentence) {
@@ -169,7 +169,7 @@ public class CNF {
 		return s;
 	}
 	
-	public Sentence disToConj(Sentence s) {
+	public static Sentence disToConj(Sentence s) {
 		if(s instanceof ConnectedSentence) {
 			if(((ConnectedSentence) s).getConnector().equals(Connectors.OR)) {
 				if(((ConnectedSentence) s).getSecond() instanceof ConnectedSentence 
@@ -190,48 +190,137 @@ public class CNF {
 				}
 			}
 		}
+		return s;
 	}
 	
-	public List <Sentence> disjToList(Sentence s)
-	{
-		List <Sentence> disj = new ArrayList <Sentence> ();
-		disjToList(disj, s);
-	}
-	
-	public List <Sentence> disjToList(List<Sentence> disj, Sentence s)
-	{
-		if(s instanceof ConnectedSentence)
-		{
-			ConnectedSentence temp = (ConnectedSentence) s;
-			if(temp.getConnector().equals(Connectors.AND))
-			{
-				disj.add(temp.getFirst());
-			}
-			return disjToList(disj, temp.getSecond());
-		}
-		return disj;
-	}
-	
-	public List<List<Sentence>> conjToList(List<Sentence> conj)
+	public static List<ArrayList<Sentence>> conjToList(Sentence s)
 	{
 		List<ArrayList<Sentence>> ret = new ArrayList< ArrayList <Sentence> >();
-		for(int i = 0; i < conj.size(); i++)
+		if(s instanceof ConnectedSentence)
 		{
-			if(conj.get(i) instanceof ConnectedSentence)
+			ConnectedSentence cs = (ConnectedSentence) s;
+			if(cs.getConnector().equals(Connectors.OR))
 			{
-				ConnectedSentence temp = (ConnectedSentence) conj.get(i);
-				ArrayList<Sentence> sentences = new ArrayList<Sentence>();
-				sentences.add(temp.getFirst());
-				while(temp.getSecond() instanceof ConnectedSentence)
-				{
-					temp = (ConnectedSentence) temp.getSecond();
-					sentences.add(temp.getFirst());
-				}
+				ret.add(getPredicates(cs));
 			}
-			ret.add(sentences);
+			else
+			{
+		
+				while(cs.getConnector().equals(Connectors.AND))
+				{
+					ret.add(ret.size(), getPredicates(cs.getFirst()));
+					if(cs.getSecond() instanceof ConnectedSentence)
+					{
+						System.out.println("CONNECTED");
+						cs = (ConnectedSentence) cs.getSecond();
+					}
+					else
+					{
+						break;
+					}
+				}
+				ret.add(ret.size(), getPredicates(cs));
+			}
 		}
+		return ret;
+	}
+	public static ArrayList<Sentence> getPredicates(Sentence cs)
+	{
+		ArrayList<Sentence> sen = new ArrayList<Sentence>();
+		return getPredicates(sen, cs);
+	}
+	public static ArrayList<Sentence> getPredicates(ArrayList<Sentence> sen, Sentence cs)
+	{
+		if(cs instanceof ConnectedSentence)
+		{
+			ConnectedSentence temp = (ConnectedSentence) cs;
+			Sentence first = temp.getFirst();
+			if(first instanceof ConnectedSentence)
+			{
+				getPredicates(sen, ((ConnectedSentence) first).getFirst());
+				getPredicates(sen, ((ConnectedSentence) first).getSecond());
+			}
+			else
+			{
+				sen.add(first);
+			}
+			Sentence second = temp.getSecond();
+			if(second instanceof ConnectedSentence)
+			{
+				getPredicates(sen, ((ConnectedSentence) second).getFirst());
+				getPredicates(sen, ((ConnectedSentence) second).getSecond());
+			}
+			else
+			{
+				sen.add(second);
+			
+		}
+		}
+		else
+		{
+			sen.add(cs);
+		}
+		return sen;
 	}
 	
+	public static List<ArrayList<Sentence>> renameVariables(List<ArrayList<Sentence>> predicates)
+	{
+		int c = 1;
+		List<ArrayList<Sentence>> ret = new ArrayList<ArrayList<Sentence>>();
+		for(int i = 0; i < predicates.size(); i++)
+		{
+			ret.add(new ArrayList<Sentence>());
+			
+			for(int j = 0; j < predicates.get(i).size(); j++)
+			{
+				Predicate pred = (Predicate) predicates.get(i).get(j);
+				List<Term> terms = pred.getTerms();
+				List<Term> temp = new ArrayList<Term>();
+				for(int k = 0; k < terms.size(); k++)
+				{
+					if(terms.get(k) instanceof Variable)
+					{
+						Variable v = (Variable)(terms.get(k));
+						temp.add(new Variable(v.getValue() + c));
+						c++;
+					}
+					else
+					{
+						temp.add(terms.get(k));
+					}
+					
+				}
+				pred.setTerms(temp);
+				System.out.println(pred.getTerms());
+				predicates.get(i).set(j, pred);
+				ret.get(i).add(pred);
+				
+			}
+		}
+		System.out.println("C is " + c);
+		return ret;
+	}
+	public static void main(String[]args)
+	{
+		List<Term> terms = new ArrayList<Term>();
+		Variable term = new Variable("x");
+		terms.add(term);
+		Predicate first = new Predicate("P", terms);
+		Predicate second = new Predicate("C", terms);
+		ConnectedSentence s = new ConnectedSentence(Connectors.OR, first, second);
+		// s = p(x) or c(x) 
+		ConnectedSentence cs = new ConnectedSentence(Connectors.OR, s, s);
+		// cs = (p(x) or c(x)) or (p(x) or c(x))
+		ConnectedSentence cs2 = new ConnectedSentence(Connectors.OR,cs, first);
+		// cs2 = p(x) or c(x) or p(x) or c(x) or p(x)
+		ConnectedSentence cs3 = new ConnectedSentence(Connectors.AND, cs2, cs2);
+		
+		ConnectedSentence cs4 = new ConnectedSentence(Connectors.AND, cs2, cs3);
+		System.out.println(cs4.toString());
+		List<ArrayList<Sentence>> disj = conjToList(cs4);
+		disj = renameVariables(disj);
+		System.out.println(disj.toString());
+	}
 	
 	
 }
