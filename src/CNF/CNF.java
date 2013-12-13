@@ -152,6 +152,8 @@ public class CNF {
 		if(s instanceof QuantifiedSentence) {
 			if(((QuantifiedSentence) s).getQuantifier().equals("ForAll")) {
 				universal.add(((QuantifiedSentence) s).getVariables().get(0));
+				s = new QuantifiedSentence(((QuantifiedSentence) s).getQuantifier(), ((QuantifiedSentence) s).getVariables(),
+						skolemize(((QuantifiedSentence) s).getQuantified(), universal, existential, num));
 			}
 			else {
 				if(universal.size() == 0) {
@@ -164,17 +166,16 @@ public class CNF {
 					}
 					existential.put(((QuantifiedSentence) s).getVariables().get(0), f);
 				}
+				Sentence quantified = ((QuantifiedSentence) s).getQuantified();
+				s = skolemize(quantified, universal, existential, num);
 			}
-			Sentence quantified = ((QuantifiedSentence) s).getQuantified();
-			((QuantifiedSentence) s).setQuantified(skolemize(quantified, universal, existential, num));
 		}
 		
 		else if (s instanceof ConnectedSentence) {
 			Sentence first = skolemize(((ConnectedSentence) s).getFirst(), universal, existential, num);
 			Sentence second = skolemize(((ConnectedSentence) s).getSecond(), universal, existential, num);
 			
-			((ConnectedSentence) s).setFirst(first);
-			((ConnectedSentence) s).setSecond(second);
+			s = new ConnectedSentence(((ConnectedSentence) s).getConnector(), first, second);
 		}
 		
 		else if (s instanceof NotSentence) {
@@ -197,16 +198,16 @@ public class CNF {
 				t = existential.get(t);
 			}
 		}
-		else if (t instanceof Function) {
-			Function f1 = new Function(((Function) t).getFunctionName());
-			for(Term t2: (ArrayList <Term>)t.getArgs()){
-				f1.addArg(skolemize(t2, existential));
-			}
-		}
+//		else if (t instanceof Function) {
+//			Function f1 = new Function(((Function) t).getFunctionName());
+//			for(Term t2: (ArrayList <Term>)t.getArgs()){
+//				f1.addArg(skolemize(t2, existential));
+//			}
+//		}
 		return t;
 	}
 
-	public Sentence removeUniversals(Sentence s) {
+	public static Sentence removeUniversals(Sentence s) {
 		if(s instanceof QuantifiedSentence) {
 			s = removeUniversals(((QuantifiedSentence) s).getQuantified());
 		}
@@ -345,11 +346,13 @@ public class CNF {
 		}
 		return ret;
 	}
+	
 	public static ArrayList<Sentence> getPredicates(Sentence cs)
 	{
 		ArrayList<Sentence> sen = new ArrayList<Sentence>();
 		return getPredicates(sen, cs);
 	}
+	
 	public static ArrayList<Sentence> getPredicates(ArrayList<Sentence> sen, Sentence cs)
 	{
 		if(cs instanceof ConnectedSentence)
@@ -382,33 +385,36 @@ public class CNF {
 		}
 		return sen;
 	}
-
-	public static void main(String[]args)
-	{
-		List<Term> terms = new ArrayList<Term>();
-		Variable term = new Variable("x");
-		terms.add(term);
-		Predicate first = new Predicate("P", terms);
-		Predicate second = new Predicate("C", terms);
-		Predicate third = new Predicate("R", terms);
-		ConnectedSentence s = new ConnectedSentence(Connectors.OR, first, second);
-		// s = new ConnectedSentence(Connectors.AND, first, s);
-		// s = p(x) and  c(x) 
-		ConnectedSentence cs = new ConnectedSentence(Connectors.AND, s, s);
-		// cs = (p(x) or c(x)) or (p(x) or c(x))
-		ConnectedSentence cs2 = new ConnectedSentence(Connectors.AND, cs, cs);
-		// cs2 = p(x) or c(x) or p(x) or c(x) or p(x)
-		ConnectedSentence cs3 = new ConnectedSentence(Connectors.AND, s, cs2);
-		ConnectedSentence cs4 = new ConnectedSentence(Connectors.AND, cs2, cs3);
-	//	System.out.println(cs4.toString());
-		//List<ArrayList<Sentence>> disj = conjToList(cs4);
-	//	System.out.println(disj.toString());
-	//	System.out.println(cs4.getArgs());
-		System.out.println(cs);
-		System.out.println((flatten(cs2)));
-		System.out.println(cs2);
+	
+	public static void standardizeApartList(List<ArrayList<Sentence>> l) {
+		Integer num = new Integer(1);
+		for(ArrayList<Sentence> l2 : l){
+			for(Sentence s: l2) {
+				renameVar(s, num);
+			}
+		}
 	}
 	
+	public static void renameVar(Sentence s, Integer num) {
+		if(s instanceof Predicate) {
+			for(Term t :(List <Term>) s.getArgs()) {
+				renameVar(t, num);
+			}
+		}
+	}
 	
+	public static void renameVar(Term t, Integer num) {
+		if(t instanceof Function) {
+			for (Term t2: t.getArgs()) {
+				renameVar(t, num);
+			}
+		}
+		
+		else if(t instanceof Variable) {
+			((Variable) t).setValue(((Variable) t).getValue() + num);
+		}
+		
+		
+	}
 }
 

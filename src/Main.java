@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import Unifier.Unifier;
@@ -82,9 +83,19 @@ public class Main {
 		
 		// Exists x [P(X) /\ ForAll x [Q(X) ==> !P(X)]]
 		Sentence s = new QuantifiedSentence("Exists", new ArrayList<Variable>(Arrays.asList(new Variable("x"))), s1);
-		System.out.println(s);
+		
+		CNF.removeEquiv(s);
 		CNF.removeImpl(s);
-		System.out.println(s);
+		CNF.pushNot(s);
+		CNF.standardizeApart(s);
+		s = CNF.skolemize(s);
+		s = CNF.removeUniversals(s);
+		s = CNF.disToConj(s);
+		s = CNF.pushOr(s);
+		s = CNF.flatten(s);
+		List<ArrayList<Sentence>> l = CNF.conjToList(s);
+		CNF.standardizeApartList(l);
+		System.out.println(l);
 		
 		/*************************** Second CNF Test Case ***************************/
 		//Q(y) /\ R(y,x)
@@ -108,8 +119,18 @@ public class Main {
 		Sentence s8 = new QuantifiedSentence("ForAll", 
 				new ArrayList<Variable>(Arrays.asList(new Variable("x"))), 
 				s7);
-		System.out.println(s8);
+		
+		CNF.removeEquiv(s8);
+		CNF.removeImpl(s8);
 		CNF.pushNot(s8);
 		System.out.println(s8);
+		s8 = CNF.skolemize(s8);
+		s8 = CNF.removeUniversals(s8);
+		s8 = CNF.disToConj(s8);
+		s8 = CNF.pushOr(s8);
+		s8 = CNF.flatten(s8);
+		List<ArrayList<Sentence>> l2 = CNF.conjToList(s8);
+//		CNF.standardizeApartList(l2);
+		System.out.println(l2);
 	}
 }
