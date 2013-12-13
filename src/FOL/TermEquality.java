@@ -80,13 +80,11 @@ public class TermEquality implements AtomicSentence {
 
         @Override
         public String toString() {
-                if (null == stringRep) {
-                        StringBuilder sb = new StringBuilder();
-                        sb.append(term1.toString());
-                        sb.append(" = ");
-                        sb.append(term2.toString());
-                        stringRep = sb.toString();
-                }
+                StringBuilder sb = new StringBuilder();
+                sb.append(term1.toString());
+                sb.append(" = ");
+                sb.append(term2.toString());
+                stringRep = sb.toString();
                 return stringRep;
         }
 }

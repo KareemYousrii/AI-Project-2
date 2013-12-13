@@ -98,17 +98,15 @@ public class ConnectedSentence implements Sentence {
 
         @Override
         public String toString() {
-                if (null == stringRep) {
-                        StringBuilder sb = new StringBuilder();
-                        sb.append("(");
-                        sb.append(first.toString());
-                        sb.append(" ");
-                        sb.append(connector);
-                        sb.append(" ");
-                        sb.append(second.toString());
-                        sb.append(")");
-                        stringRep = sb.toString();
-                }
+                StringBuilder sb = new StringBuilder();
+                sb.append("(");
+                sb.append(first.toString());
+                sb.append(" ");
+                sb.append(connector);
+                sb.append(" ");
+                sb.append(second.toString());
+                sb.append(")");
+                stringRep = sb.toString();
                 return stringRep;
         }
 }

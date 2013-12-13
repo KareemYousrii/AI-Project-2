@@ -68,13 +68,11 @@ public class NotSentence implements Sentence {
 
         @Override
         public String toString() {
-                if (null == stringRep) {
-                        StringBuilder sb = new StringBuilder();
-                        sb.append("NOT(");
-                        sb.append(negated.toString());
-                        sb.append(")");
-                        stringRep = sb.toString();
-                }
+                StringBuilder sb = new StringBuilder();
+                sb.append("NOT(");
+                sb.append(negated.toString());
+                sb.append(")");
+                stringRep = sb.toString();
                 return stringRep;
         }
 }

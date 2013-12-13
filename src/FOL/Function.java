@@ -92,25 +92,23 @@ public class Function implements Term {
 
         @Override
         public String toString() {
-                if (null == stringRep) {
-                        StringBuilder sb = new StringBuilder();
-                        sb.append(functionName);
-                        sb.append("(");
+                StringBuilder sb = new StringBuilder();
+                sb.append(functionName);
+                sb.append("(");
 
-                        boolean first = true;
-                        for (Term t : terms) {
-                                if (first) {
-                                        first = false;
-                                } else {
-                                        sb.append(",");
-                                }
-                                sb.append(t.toString());
+                boolean first = true;
+                for (Term t : terms) {
+                        if (first) {
+                                first = false;
+                        } else {
+                                sb.append(",");
                         }
-
-                        sb.append(")");
-
-                        stringRep = sb.toString();
+                        sb.append(t.toString());
                 }
+
+                sb.append(")");
+
+                stringRep = sb.toString();
                 return stringRep;
         }
 }

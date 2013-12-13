@@ -96,17 +96,16 @@ public class QuantifiedSentence implements Sentence {
 
         @Override
         public String toString() {
-                if (null == stringRep) {
-                        StringBuilder sb = new StringBuilder();
-                        sb.append(quantifier);
-                        sb.append(" ");
-                        for (Variable v : variables) {
-                                sb.append(v.toString());
-                                sb.append(" ");
-                        }
-                        sb.append(quantified.toString());
-                        stringRep = sb.toString();
-                }
-                return stringRep;
+            StringBuilder sb = new StringBuilder();
+            sb.append(quantifier);
+            sb.append(" ");
+            for (Variable v : variables) {
+                    sb.append(v.toString());
+                    sb.append(" ");
+            }
+            sb.append(quantified.toString());
+            stringRep = sb.toString();
+            
+            return stringRep;
         }
 }
