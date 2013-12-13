@@ -94,7 +94,8 @@ public class Main {
 		s = CNF.pushOr(s);
 		s = CNF.flatten(s);
 		List<ArrayList<Sentence>> l = CNF.conjToList(s);
-		CNF.standardizeApartList(l);
+		//CNF.standardizeApartList(l);
+		CNF.renameVariables(l);
 		System.out.println(l);
 		
 		/*************************** Second CNF Test Case ***************************/
@@ -131,7 +132,9 @@ public class Main {
 		s8 = CNF.pushOr(s8);
 		s8 = CNF.flatten(s8);
 		List<ArrayList<Sentence>> l2 = CNF.conjToList(s8);
-		CNF.standardizeApartList(l2);
+		//CNF.standardizeApartList(l2);
+		CNF.renameVariables(l2);
+		
 		System.out.println(l2);
 	}
 }

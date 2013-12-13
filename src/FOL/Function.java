@@ -18,7 +18,11 @@ public class Function implements Term {
         
         public Function(String functionName) {
             this.functionName = functionName;
-    }
+        }
+        
+        public void setTerms(List<Term> terms) {
+        	this.terms = terms;
+        }
 
         public Function(String functionName, List<Term> terms) {
                 this.functionName = functionName;

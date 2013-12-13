@@ -386,35 +386,70 @@ public class CNF {
 		return sen;
 	}
 	
-	public static void standardizeApartList(List<ArrayList<Sentence>> l) {
-		Integer num = new Integer(1);
-		for(ArrayList<Sentence> l2 : l){
-			for(Sentence s: l2) {
-				renameVar(s, num);
-			}
+	public static void renameVariables(List<ArrayList<Sentence>> l)
+	{
+		for(int i = 0; i < l.size(); i++)
+		{
+			renameSentences(l.get(i), i + 1);
 		}
 	}
 	
-	public static void renameVar(Sentence s, Integer num) {
-		if(s instanceof Predicate) {
-			for(Term t :(List <Term>) s.getArgs()) {
-				renameVar(t, num);
-			}
+	public static void renameSentences(ArrayList<Sentence> l, int num)
+	{
+		for(int i = 0; i < l.size(); i++)
+		{
+			l.set(i,renameSentences(l.get(i),num));
 		}
 	}
-	
-	public static void renameVar(Term t, Integer num) {
-		if(t instanceof Function) {
-			for (Term t2: t.getArgs()) {
-				renameVar(t, num);
+	public static Sentence renameSentences(Sentence s, int num)
+	{		
+		if(s instanceof Predicate)
+		{
+			Predicate temp = (Predicate) s;
+			return renamePredicates(temp, num);
+		}
+		return s;
+	}
+	public static Sentence renamePredicates(Predicate p, int num)
+	{
+		Predicate temp = p;
+		Predicate rep = new Predicate(temp.getPredicateName());
+		List<Term> terms = temp.getTerms();
+		List<Term> newTerms = new ArrayList<Term>();
+		for(int i = 0; i < terms.size(); i++)
+		{
+			if(terms.get(i) instanceof Variable)
+			{
+				Variable v = new Variable(((Variable) terms.get(i)).getValue() + num);
+				newTerms.add(v);
+			}
+			else
+			{
+				newTerms.add(renameFunctions((Function) terms.get(i), num));
 			}
 		}
-		
-		else if(t instanceof Variable) {
-			((Variable) t).setValue(((Variable) t).getValue() + num);
+		rep.setTerms(newTerms);
+		p = rep;
+		return rep;
+	}
+	
+	public static Function renameFunctions(Function f, int num)
+	{
+		Function temp = f;
+		Function rep = new Function(temp.getFunctionName());
+		List<Term> terms = temp.getTerms();
+		List<Term> newTerms = new ArrayList<Term>();
+		for(int i = 0; i < terms.size(); i++)
+		{
+			if(terms.get(i) instanceof Variable)
+			{
+				Variable v = new Variable(((Variable) terms.get(i)).getValue() + num);
+				newTerms.add(v);
+			}
 		}
-		
-		
+		rep.setTerms(newTerms);
+		f = rep;
+		return rep;
 	}
 }
 
