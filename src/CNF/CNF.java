@@ -193,6 +193,43 @@ public class CNF {
 		return s;
 	}
 	
+	public static Sentence pushOr(Sentence s)
+	{
+		if(s instanceof ConnectedSentence)
+		{
+			ConnectedSentence cs = (ConnectedSentence) s;
+			if(cs.getConnector().equals(Connectors.AND))
+			{
+				return new ConnectedSentence(Connectors.AND, pushOr(cs.getFirst()), pushOr(cs.getSecond()));
+			}
+			if(cs.getConnector().equals(Connectors.OR))
+			{
+				Sentence or = cs.getFirst();
+				ConnectedSentence out;
+				Sentence second = cs.getSecond();
+				ArrayList<Sentence> temp = new ArrayList<Sentence>();
+				while(second instanceof ConnectedSentence)
+				{
+					 ConnectedSentence cst = (ConnectedSentence) second;
+					 second = ((ConnectedSentence) second).getSecond();
+
+					 System.out.println(second.getArgs());
+					 temp.add(cst.getFirst());
+
+				}
+				temp.add(second);
+				out = new ConnectedSentence(Connectors.AND, or, temp.get(0));
+				for(int i = 1; i < temp.size(); i++)
+				{
+					ConnectedSentence tempSentence = new ConnectedSentence(Connectors.OR, or, temp.get(i));
+					out = new ConnectedSentence(Connectors.AND, out, tempSentence);
+				}
+			return out;
+			}
+		}
+		return s;
+	}
+	
 	public static List<ArrayList<Sentence>> conjToList(Sentence s)
 	{
 		List<ArrayList<Sentence>> ret = new ArrayList< ArrayList <Sentence> >();
@@ -269,20 +306,23 @@ public class CNF {
 		terms.add(term);
 		Predicate first = new Predicate("P", terms);
 		Predicate second = new Predicate("C", terms);
-		ConnectedSentence s = new ConnectedSentence(Connectors.OR, first, second);
-		// s = p(x) or c(x) 
-		ConnectedSentence cs = new ConnectedSentence(Connectors.OR, s, s);
+		Predicate third = new Predicate("R", terms);
+		ConnectedSentence s = new ConnectedSentence(Connectors.AND, first, second);
+		 s = new ConnectedSentence(Connectors.AND, first, s);
+		// s = p(x) and  c(x) 
+		ConnectedSentence cs = new ConnectedSentence(Connectors.OR, third, s);
 		// cs = (p(x) or c(x)) or (p(x) or c(x))
-		ConnectedSentence cs2 = new ConnectedSentence(Connectors.OR,cs, first);
+		ConnectedSentence cs2 = new ConnectedSentence(Connectors.AND,cs, cs);
 		// cs2 = p(x) or c(x) or p(x) or c(x) or p(x)
 		ConnectedSentence cs3 = new ConnectedSentence(Connectors.AND, cs2, cs2);
 		
 		ConnectedSentence cs4 = new ConnectedSentence(Connectors.AND, cs2, cs3);
-		System.out.println(cs4.toString());
-		List<ArrayList<Sentence>> disj = conjToList(cs4);
-		System.out.println(disj.toString());
+	//	System.out.println(cs4.toString());
+		//List<ArrayList<Sentence>> disj = conjToList(cs4);
+	//	System.out.println(disj.toString());
+	//	System.out.println(cs4.getArgs());
+		System.out.println(pushOr(cs2));
 	}
 	
 	
 }
-
